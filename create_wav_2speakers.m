@@ -90,7 +90,7 @@ for i_mm = 1:length(min_max)
             rever_2 = zeros(length(s1)+length(impulse_response_2(:,1))-1,6);
             for n = 1:6
                 rever_1(:,n) = conv(s1,impulse_response_1(:,n));
-                %rever_2(:,n) = conv(s2,impulse_response_2(:,n));
+                rever_2(:,n) = conv(s2,impulse_response_2(:,n));
             end
             s1 = rever_1;
             s2 = rever_2;
