@@ -76,21 +76,17 @@ for i_mm = 1:length(min_max)
             s2       = audioread([wsj0root C{3}{i}]);
 
             % get impulse responses
-            n1 = 0;
-            n2 = 0;
-            while n1 == n2  %make sure the two impulse responses are different for the two speakers
-                n1 = randi(500);
-                n2 = randi(500);
-            end
-            ir1 = strcat('/scratch/near/roomGeometry/roomGeometry_',sprintf('%03d', n1),'.wav');
-            ir2 = strcat('/scratch/near/roomGeometry/roomGeometry_',sprintf('%03d', n2),'.wav');
-            impulse_response_1 = audioread(ir1);
-            impulse_response_2 = audioread(ir2);
+            n = randi(500);
+            file_ir = strcat('/scratch/near/roomGeometry/roomGeometry_',sprintf('%03d', n),'.wav');
+            %ir2 = strcat('/scratch/near/roomGeometry/roomGeometry_',sprintf('%03d', n2),'.wav');
+            ir = audioread(file_ir);
+            impulse_response_1 = ir(:,1:6);
+            impulse_response_2 = ir(:,7:12);
             rever_1 = zeros(length(s1)+length(impulse_response_1(:,1))-1,6);
-            rever_2 = zeros(length(s1)+length(impulse_response_2(:,1))-1,6);
+            rever_2 = zeros(length(s2)+length(impulse_response_2(:,1))-1,6);
             for n = 1:6
-                rever_1(:,n) = conv(s1,impulse_response_1(:,n));
-                rever_2(:,n) = conv(s2,impulse_response_2(:,n));
+                rever_1(:,n) = fastconv(s1,impulse_response_1(:,n));
+                rever_2(:,n) = fastconv(s2,impulse_response_2(:,n));
             end
             s1 = rever_1;
             s2 = rever_2;
@@ -158,12 +154,12 @@ for i_mm = 1:length(min_max)
             scaling16bit_16k(i) = mix_scaling_16k;
             scaling16bit_8k(i)  = mix_scaling_8k;
                         
-            audiowrite([output_dir8k '/' min_max{i_mm} '/' data_type{i_type} '/s1/' mix_name sprintf('_roomGeometry_%03d', n1) '.wav'],s1_8k,fs8k);
-            audiowrite([output_dir16k '/' min_max{i_mm} '/' data_type{i_type} '/s1/' mix_name sprintf('_roomGeometry_%03d', n1) '.wav'],s1_16k,fs);
-            audiowrite([output_dir8k '/' min_max{i_mm} '/' data_type{i_type} '/s2/' mix_name sprintf('_roomGeometry_%03d', n2) '.wav'],s2_8k,fs8k);
-            audiowrite([output_dir16k '/' min_max{i_mm} '/' data_type{i_type} '/s2/' mix_name sprintf('_roomGeometry_%03d', n2) '.wav'],s2_16k,fs);
-            audiowrite([output_dir8k '/' min_max{i_mm} '/' data_type{i_type} '/mix/' mix_name '.wav'],mix_8k,fs8k);
-            audiowrite([output_dir16k '/' min_max{i_mm} '/' data_type{i_type} '/mix/' mix_name '.wav'],mix_16k,fs);
+            audiowrite([output_dir8k '/' min_max{i_mm} '/' data_type{i_type} '/s1/' mix_name sprintf('_roomGeometry_%03d', n) '.wav'],s1_8k,fs8k);
+            audiowrite([output_dir16k '/' min_max{i_mm} '/' data_type{i_type} '/s1/' mix_name sprintf('_roomGeometry_%03d', n) '.wav'],s1_16k,fs);
+            audiowrite([output_dir8k '/' min_max{i_mm} '/' data_type{i_type} '/s2/' mix_name sprintf('_roomGeometry_%03d', n) '.wav'],s2_8k,fs8k);
+            audiowrite([output_dir16k '/' min_max{i_mm} '/' data_type{i_type} '/s2/' mix_name sprintf('_roomGeometry_%03d', n) '.wav'],s2_16k,fs);
+            audiowrite([output_dir8k '/' min_max{i_mm} '/' data_type{i_type} '/mix/' mix_name sprintf('_roomGeometry_%03d', n) '.wav'],mix_8k,fs8k);
+            audiowrite([output_dir16k '/' min_max{i_mm} '/' data_type{i_type} '/mix/' mix_name sprintf('_roomGeometry_%03d', n) '.wav'],mix_16k,fs);
             
             if mod(i,10)==0
                 fprintf(1,'.');
