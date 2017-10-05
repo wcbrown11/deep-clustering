@@ -74,19 +74,21 @@ for i_mm = 1:length(min_max)
             % get input wavs
             [s1, fs] = audioread([wsj0root C{1}{i}]);
             s2       = audioread([wsj0root C{3}{i}]);
-
             % get impulse responses
             n = randi(500);
-            file_ir = strcat('/scratch/near/roomGeometry/roomGeometry_',sprintf('%03d', n),'.wav');
+            file_ir = strcat('/scratch/near/roomGeometry/roomGeometry_',sprintf('%03d', n),'.mat');
             %ir2 = strcat('/scratch/near/roomGeometry/roomGeometry_',sprintf('%03d', n2),'.wav');
-            ir = audioread(file_ir);
+            ir = load(file_ir);
+            ir = ir.result;
+            ir = ir.';
+            %all(ir(:,1)==ir(:,2))
             impulse_response_1 = ir(:,1:6);
             impulse_response_2 = ir(:,7:12);
             rever_1 = zeros(length(s1)+length(impulse_response_1(:,1))-1,6);
             rever_2 = zeros(length(s2)+length(impulse_response_2(:,1))-1,6);
-            for n = 1:6
-                rever_1(:,n) = fastconv(s1,impulse_response_1(:,n));
-                rever_2(:,n) = fastconv(s2,impulse_response_2(:,n));
+            for channel = 1:6
+                rever_1(:,channel) = fastconv(s1,impulse_response_1(:,channel));
+                rever_2(:,channel) = fastconv(s2,impulse_response_2(:,channel));
             end
             s1 = rever_1;
             s2 = rever_2;
