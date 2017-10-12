@@ -10,10 +10,35 @@ will work if you haven't prepared your train/valid/test file lists.
 from visualization import print_examples
 from nnet import train_nnet, load_model
 from predict import separate_sources
+import tensorflow as tf
 
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+
+config.gpu_options.allow_growth=True
+
+set_session(tf.Session(config=config))
+import os
+import glob
+def generate_file_list(path):
+    file_list = glob.glob(path)
+    result = []
+    for ele in file_list:
+        for j in range(1,7):
+            name = ele.replace('CH1','CH%d'%j)
+            result.append(os.path.basename(name))
+    return result
+
+# import os
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+# os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 def main():
-    train_nnet('train', 'valid')
+    train_path = '/scratch/near/2speakers_6channel/wav16k/min/tr/mix/*CH1.wav'
+    train_list = generate_file_list(train_path)
+    valid_list = '/scratch/near/2speakers_6channel/wav16k/min/cv/mix/*CH1.wav'
+    valid_list = generate_file_list(valid_list)
+    train_nnet(train_list, valid_list)
     model = load_model('model')
     egs = []
     current_spk = ""

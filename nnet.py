@@ -77,11 +77,11 @@ def affinitykmeans(Y, V):
 
 
 def train_nnet(train_list, valid_list, weights_path=None):
-    train_gen = get_egs(train_list,
+    train_gen = get_egs(train_list,'tr',
                         min_mix=MIN_MIX,
                         max_mix=MAX_MIX,
                         batch_size=BATCH_SIZE)
-    valid_gen = get_egs(valid_list,
+    valid_gen = get_egs(valid_list, 'cv',
                         min_mix=MIN_MIX,
                         max_mix=MAX_MIX,
                         batch_size=BATCH_SIZE)

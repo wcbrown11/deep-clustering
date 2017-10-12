@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # FFT parameters, self-explanatory
-FRAME_RATE = 8000
+FRAME_RATE = 16000
 FRAME_LENGTH = .032
 FRAME_SHIFT = .008
 
@@ -12,17 +12,17 @@ DB_THRESHOLD = 40  # Difference from max amplitude to be treated as silence
 # Clustering parameters
 EMBEDDINGS_DIMENSION = 40
 MIN_MIX = 2  # Minimum number of mixed speakers for training
-MAX_MIX = 3  # Maximum number of mixed speakers for training
+MAX_MIX = 2 # Maximum number of mixed speakers for training
 
 # Neural net topology
 SIZE_RLAYERS = 300  # Since we use BLSTMs, the number of neurons is doubled
 NUM_RLAYERS = 2     # Number of layers
 
 # Training parameter, self-explanatory
-BATCH_SIZE = 128
-SAMPLES_PER_EPOCH = 8192
-NUM_EPOCHS = 200
-VALID_SIZE = 512
+BATCH_SIZE = 50
+SAMPLES_PER_EPOCH = 8000
+NUM_EPOCHS = 10
+VALID_SIZE = 8000
 
 # Regularization parameters
 DROPOUT = 0.5     # Feed forward dropout

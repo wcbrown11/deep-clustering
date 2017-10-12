@@ -69,14 +69,12 @@ def istft(X, overlap=FRAME_LENGTH//FRAME_SHIFT):
     return x
 
 
-def get_egs(wavlist, min_mix=2, max_mix=3, batch_size=1):
+def get_egs(wavlist, path, min_mix=2, max_mix=3, batch_size=1):
     """
     Generate examples for the neural network from a list of wave files with
     speaker ids. Each line is of type "path speaker", as follows:
 
-    path/to/1st.wav spk1
-    path/to/2nd.wav spk2
-    path/to/3rd.wav spk1
+    path/to/mix.wav
 
     and so on.
     min_mix and max_mix are the minimum and maximum number of examples to
@@ -88,46 +86,34 @@ def get_egs(wavlist, min_mix=2, max_mix=3, batch_size=1):
     batch_count = 0
 
     while True:  # Generate examples indefinitely
-        # Select number of files to mix
-        k = np.random.randint(min_mix, max_mix+1)
-        if k > len(speaker_wavs):
-            # Reading wav files list and separating per speaker
-            speaker_wavs = {}
-            f = open(wavlist)
-            for line in f:
-                line = line.strip().split()
-                if len(line) != 2:
-                    continue
-                p, spk = line
-                if spk not in speaker_wavs:
-                    speaker_wavs[spk] = []
-                speaker_wavs[spk].append(p)
-            f.close()
-            # Randomizing wav lists
-            for spk in speaker_wavs:
-                random.shuffle(speaker_wavs[spk])
         wavsum = None
         sigs = []
 
         # Pop wav files from random speakers, store them individually for
         # dominant spectra decision and generate the mixed input
-        for spk in random.sample(speaker_wavs.keys(), k):
-            p = speaker_wavs[spk].pop()
-            if not speaker_wavs[spk]:
-                del(speaker_wavs[spk])  # Remove empty speakers from dictionary
-            sig, rate = sf.read(p)
-            if rate != FRAME_RATE:
-                raise Exception("Config specifies " + str(FRAME_RATE) +
-                                "Hz as sample rate, but file " + str(p) +
-                                "is in " + str(rate) + "Hz.")
-            sig = sig - np.mean(sig)
-            sig = sig/np.max(np.abs(sig))
-            sig *= (np.random.random()*1/4 + 3/4)
-            if wavsum is None:
-                wavsum = sig
-            else:
-                wavsum = wavsum[:len(sig)] + sig[:len(wavsum)]
-            sigs.append(sig)
+        file_name = wavlist.pop(0)
+        wavlist.append(file_name)
+        s1, rate = sf.read('/scratch/near/2speakers_6channel/wav16k/min/'+path+'/s1/'+file_name)
+        if rate != FRAME_RATE:
+            raise Exception("Config specifies " + str(FRAME_RATE) +
+                            "Hz as sample rate, but file " + str(p) +
+                            "is in " + str(rate) + "Hz.")
+        s1 = s1 - np.mean(s1)
+        s1 = s1/np.max(np.abs(s1))
+        s1 *= (np.random.random()*1/4 + 3/4)
+        s2, rate = sf.read('/scratch/near/2speakers_6channel/wav16k/min/'+path+'/s2/'+file_name)
+        if rate != FRAME_RATE:
+            raise Exception("Config specifies " + str(FRAME_RATE) +
+                            "Hz as sample rate, but file " + str(p) +
+                            "is in " + str(rate) + "Hz.")
+        s2 = s2 - np.mean(s2)
+        s2 = s1/np.max(np.abs(s2))
+        s2 *= (np.random.random()*1/4 + 3/4)
+
+        wavsum = s1[:min(len(s1),len(s2))] + s2[:min(len(s1),len(s2))]
+        sigs.append(s1)
+        sigs.append(s2)
+
 
         # STFT for mixed signal
         def get_logspec(sig):
@@ -148,7 +134,7 @@ def get_egs(wavlist, min_mix=2, max_mix=3, batch_size=1):
         # Get dominant spectra indexes, create one-hot outputs
         Y = np.zeros(X.shape + (nc,))
         vals = np.argmax(specs, axis=0)
-        for i in range(k):
+        for i in range(2):
             t = np.zeros(nc)
             t[i] = 1
             Y[vals == i] = t
@@ -180,6 +166,6 @@ def get_egs(wavlist, min_mix=2, max_mix=3, batch_size=1):
 
 
 if __name__ == "__main__":
-    x, y = next(get_egs('train', batch_size=50))
+    x, y = next(get_egs(train_list, batch_size=50))
     print(x['input'].shape)
     print(y['kmeans_o'].shape)
